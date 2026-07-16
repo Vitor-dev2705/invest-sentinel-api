@@ -1,42 +1,97 @@
-# Invest Sentinel - API de Monitoramento e Alertas de Ativos 
+# 🛡️ Invest Sentinel AI
 
-Olá! Este é o repositório da API do **Invest Sentinel**, um microsserviço que desenvolvi em **Spring Boot** voltado para o ecossistema de mercado financeiro. O objetivo principal do projeto é monitorar oscilações de preços de ativos e disparar notificações automatizadas de forma totalmente desacoplada.
+O **Invest Sentinel AI** é uma API inteligente desenvolvida em **Spring Boot** que une processamento de linguagem natural (LLM), transcrição de voz e mercado financeiro. O sistema é capaz de interpretar comandos de voz ou texto, identificar a intenção do usuário e executar ações reais (como consultar cotações ou agendar alertas de preço) através de **Function Calling (Tools)** integradas com a **API da Groq (Llama 3.3 / Whisper)** ou **Google Gemini**.
 
-Para construir esta API, foquei fortemente em aplicar boas práticas de design de software, os princípios do SOLID e, principalmente, padrões de projeto clássicos (GoF) para garantir que o sistema seja escalável e resiliente.
+A arquitetura do projeto foi desenhada seguindo as melhores práticas de design de software, utilizando padrões como **Facade, Strategy, DTOs e Services** para garantir baixo acoplamento e alta testabilidade.
 
 ---
 
-## 📐 Como a Arquitetura Funciona (Design Patterns)
+## 🤖 Interaja Diretamente pelo Telegram!
 
-A grande sacada desse projeto foi remover as regras de notificação e o fluxo de negócios de dentro do Controller, dividindo as responsabilidades em duas camadas principais:
+Para facilitar os testes e a avaliação do projeto, você não precisa rodar a aplicação localmente para ver a IA em ação. Criamos um bot oficial onde você pode realizar consultas de ativos e agendar alertas enviando mensagens de texto ou áudio gravado no próprio celular:
 
-### 1. Padrão Strategy (Notificações Dinâmicas)
-Em vez de encher o código com blocos de `if/else` para decidir se o alerta vai para o Telegram ou e-mail, isolei os algoritmos de envio no pacote `strategy`. 
-* Criei uma interface comum (`NotificationStrategy`) e cada canal implementa sua própria lógica.
-* O `NotificationContextService` injeta dinamicamente todas as estratégias disponíveis em um `Map`.
-* **Benefício:** Se amanhã eu quiser adicionar alertas via WhatsApp, SMS ou Discord, eu só preciso criar uma nova classe que implemente a interface. O código antigo continua intacto, respeitando o princípio de Aberto/Fechado (OCP).
+👉 **Acesse o Bot aqui:** [Invest Sentinel no Telegram](https://web.telegram.org/a/#8246885407)
 
-### 2. Padrão Facade (Fachada Unificada)
-O `MarketAlertFacade` serve como um ponto central de entrada para a execução do pipeline de alertas. Ele esconde a complexidade do sistema do meu Controller.
-* Ele recebe os dados brutos, executa validações de negócio (como checar se o preço é maior que zero ou aplicar mensagens analíticas) e orquestra o roteamento correto no serviço de contexto.
-* **Benefício:** O Controller fica limpo e focado apenas em receber a requisição HTTP.
+*   **O que enviar para o Bot?**
+    *   *Mensagem de texto:* `"Qual o valor atual de VALE3?"` ou `"Crie um alerta se PETR4 chegar a 38.50"`
+    *   *Mensagem de voz:* Grave um áudio direto no chat perguntando a cotação de qualquer ativo da B3 ou pedindo para monitorar um preço.
+
+---
+
+## 🚀 Principais Funcionalidades
+
+*   **🎙️ Processamento de Voz Multimodal:** Recebe arquivos de áudio, realiza a transcrição utilizando a inteligência artificial (Groq Whisper) e gera respostas rápidas em texto.
+*   **📈 Consulta de Cotações em Tempo Real:** Integrado com APIs financeiras para retornar o preço atual de ativos da B3 (ex: `VALE3`, `PETR4`) sob demanda do usuário.
+*   **🔔 Alertas de Preço Automatizados (Function Calling):** A IA identifica quando você deseja monitorar um ativo e dispara um agendamento de alerta real para o canal escolhido (como o próprio **Telegram**).
+*   **🛡️ Robustez e Validação:** Filtros integrados que rejeitam ativos vazios, nulos ou preços inconsistentes antes do processamento.
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-* **Java 17** (com suporte pronto para Java 25)
-* **Spring Boot 3.3.0** (Spring Web)
-* **Maven** (Gerenciador de dependências e build)
+*   **Java 17 & Spring Boot 3.3.0**
+*   **Spring AI** (Integração com ecossistemas Groq e OpenAI)
+*   **Groq Cloud (Llama 3.3 & Whisper)** / **Google Gemini API**
+*   **Docker & Docker Compose** (Containerização simplificada)
+*   **JUnit 5** (Suite de testes automatizados)
+*   **Maven** (Gerenciador de dependências)
 
 ---
 
-## ⚙️ Como Executar o Projeto Localmente
+## 🐳 Como Executar com Apenas Um Clique (Opcional)
 
-1. Certifique-se de ter o Maven e o Java instalados na sua máquina.
-2. Clone o repositório e navegue até a pasta raiz (onde está o `pom.xml`).
-3. Execute o comando para rodar a aplicação:
+Se quiser rodar o servidor da API localmente em sua máquina, a forma mais rápida é através do Docker.
 
+### Pré-requisitos:
+*   [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado e rodando.
+
+### Passo a Passo:
+1.  Na pasta raiz do projeto, renomeie o arquivo `.env.example` para `.env`.
+2.  Abra o arquivo `.env` e configure a sua chave da Groq e/ou Gemini:
+    ```env
+    GROQ_API_KEY=gsk_sua_chave_aqui
+    GEMINI_API_KEY=sua_chave_gemini_aqui
+    ```
+3.  Execute o inicializador automático:
+    *   **No Windows:** Dê dois cliques no arquivo `play.bat`.
+    *   **No Linux / macOS:** Execute `./play.sh` no terminal.
+
+A API local estará disponível em:  
+👉 **`http://localhost:9090`**
+
+---
+
+## 💻 Execução Local via Terminal (Sem Docker)
+
+Caso prefira rodar diretamente no seu ambiente de desenvolvimento:
+
+1.  Entre na pasta da API:
+    ```bash
+    cd api
+    ```
+2.  Defina suas chaves de API nas variáveis de ambiente:
+    *   **Windows (CMD):**
+        ```cmd
+        set SPRING_AI_OPENAI_API_KEY=sua_chave_groq_aqui
+        set GEMINI_API_KEY=sua_chave_gemini_aqui
+        ```
+    *   **Linux / macOS:**
+        ```bash
+        export SPRING_AI_OPENAI_API_KEY="sua_chave_groq_aqui"
+        export GEMINI_API_KEY="sua_chave_gemini_aqui"
+        ```
+3.  Compile e execute o projeto usando o Maven Wrapper:
+    ```bash
+    ./mvnw.cmd clean spring-boot:run
+    ```
+
+---
+
+## 🧪 Como Testar a API Localmente
+
+### 1. Consultar Preço Atual de um Ativo (via IA)
+Envie uma pergunta em texto livre para o assistente. A IA vai disparar a Tool interna, buscar a cotação real e te devolver os dados formatados:
 ```bash
-mvn clean install
-mvn spring-boot:run
+curl -X POST "http://localhost:9090/api/v1/voice/text" \
+     -H "Content-Type: text/plain" \
+     -d "Qual o valor da Vale atualmente?"
