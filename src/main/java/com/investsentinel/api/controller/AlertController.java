@@ -19,8 +19,11 @@ public class AlertController {
             @RequestParam String asset,
             @RequestParam double price,
             @RequestParam String channel) {
-         
-        alertFacade.executeAlertPipeline(asset, price, channel);
-        return ResponseEntity.ok("Pipeline de monitoramento disparado com sucesso via: " + channel);
+        try {
+            String response = alertFacade.triggerAlert(asset, price, channel);
+            return ResponseEntity.ok(response);
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

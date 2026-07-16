@@ -1,0 +1,11 @@
+services:
+  invest-sentinel:
+    build: .
+    container_name: invest-sentinel-api
+    ports:
+      - "9090:9090"
+    environment:
+      - SPRING_AI_OPENAI_API_KEY=${GROQ_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SPRING_AI_OPENAI_ENABLED=true
+    restart: always
